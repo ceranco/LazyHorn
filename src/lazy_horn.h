@@ -27,7 +27,7 @@ namespace LazyHorn {
     typedef std::map<func_decl, int, compare_func_decl> decl_to_int_map;
     typedef std::vector<search_info_node> search_info_vec;
     typedef std::set<int> assertion_set;
-    typedef std::vector<expr> ih_expr_vec;
+    typedef std::vector<expr> lh_expr_vec;
     typedef std::vector<expr_vector> relation_params_vec;
     typedef std::set<int, compare_assertions_priority> edges_queue;
 
@@ -199,17 +199,7 @@ namespace LazyHorn {
 
             strong_connect(vertices, root, edges_stack, root, curr_index, vertices_stack, index, lowlink, on_stack);
         }
-        
-        /*
-        int next_used_node(int node, search_info_vec& info) {
-            int curr_node = node;
-            while (info[curr_node].get_dist() != 0) {
-                curr_node = info[curr_node].get_next_node();
-            }
-            return curr_node;
-        }
-        */
-        
+                
         int last_edge(int node, int edge, search_info_vec& info) {
             int curr_node = node;
             int curr_edge = edge;
@@ -219,7 +209,6 @@ namespace LazyHorn {
             }
             return curr_edge;
         }
-        
 
     public:
         graph() : num_of_nodes(0), num_of_edges(0) {}
@@ -466,7 +455,6 @@ namespace LazyHorn {
         return out;
     }
 
-    // TODO: check if more settings should be included from https://github.com/seahorn/seahorn/blob/master/lib/seahorn/HornSolver.cc
     params init_params(context& c, unsigned int timeout = 0) {
         // set_param("verbose", 10);
         params params(c);
@@ -511,8 +499,6 @@ namespace LazyHorn {
         *   - 1 - output the full graph and the final covers (if the problem is unsat)
         *   - 2 - also, output the intermidiate graphs and covers
         *   - 3 - also, output the covers after the addition of new assertions
-        *
-        * TODO: convert to an option or an enum type
         */
         int verbosity;
 
@@ -523,13 +509,13 @@ namespace LazyHorn {
 
         context c;
         expr_vector assertions;
-        ih_expr_vec covers;
+        lh_expr_vec covers;
 
         func_decl_set rel_set;
         func_decl_vec head_rel_vec;
         func_decl_vec body_rel_vec;
 
-        ih_expr_vec body_rel_expr_vec;
+        lh_expr_vec body_rel_expr_vec;
         relation_params_vec head_rel_params_vec;
         relation_params_vec body_rel_params_vec;
 
@@ -944,7 +930,7 @@ namespace LazyHorn {
             IH_MEASURE_FN;
             assert(path.size() > 0);
 
-            ih_expr_vec path_assertions;
+            lh_expr_vec path_assertions;
             for (int assertion_id : path) {
                 expr assertion = assertions[assertion_id];
                 assert(assertion.is_forall());
@@ -1031,102 +1017,7 @@ namespace LazyHorn {
             }
             return implies(assertion.arg(0), c.bool_val(false));
         }
-
-        /*
-        void update_edge(int edge, edges_queue& queue) {
-            int first_node = decl_to_node[body_rel_vec[edge]];
-            int last_node = decl_to_node[head_rel_vec[edge]];
-
-            if (covers[last_node].is_true()) {
-                return;
-            }
-
-            assert(assertions[edge].is_forall());
-            expr body_sub_assertion = substitute_body(edge, assertions[edge].body());
-            expr sub_assertion = substitute_head_solver(edge, body_sub_assertion, covers[last_node]);
-
-            if (!is_assertion_valid(sub_assertion, last_node, edge)) {
-
-                if (is_error_decl(head_rel_vec[edge])) {
-                    return;
-                }
-
-                // insert the neighbors (with cover other than true) to the queue
-                for (const neighbor& n : rel_graph.get_neighbors_of_node(last_node)) {
-                    if (!covers[n.get_node()].is_true() && n.get_edge() != edge) {
-                        queue.insert(n.get_edge());
-                    }
-                }
-
-                // iterate till convergence
-                do {
-                    if (first_node = last_node) {
-                        body_sub_assertion = substitute_body(edge, assertions[edge].body());
-                    }
-                    sub_assertion = substitute_head_solver(edge, body_sub_assertion, covers[last_node]);
-                } while (!is_assertion_valid(sub_assertion, last_node, edge));
-            } 
-        }
-
-        bool is_assertion_valid(expr assertion, int last_node, int assertion_id) {
-            solver s(c);
-            s.add(!assertion);
-            check_result res = s.check();
-            
-            // assertion is not valid
-            if (res == sat) { 
-
-                if (last_node == error_decl_id) {
-                    covers[last_node] = c.bool_val(true);
-                    return false;
-                }
-                
-                model m = s.get_model();
-                expr curr_cover = covers[last_node];
-                expr_vector new_cover_conjs(c);
-                
-                // iterate over the conjunctions of the current cover
-                if (curr_cover.is_and()) {
-                    for (int i = 0; i < curr_cover.num_args(); i++) {
-                        expr conj = curr_cover.arg(i);
-                        expr_vector head_rel_params = head_rel_params_vec[assertion_id];
-                        expr sub_conj = conj.substitute(head_rel_params);
-                        if (m.eval(sub_conj).is_true()) {
-                            new_cover_conjs.push_back(conj);
-                        }
-
-                        // update the cover
-                        int num_of_conjs = new_cover_conjs.size();
-                        if (num_of_conjs == 0) {
-                            covers[last_node] = c.bool_val(true);
-                        }
-                        else if (num_of_conjs == 1) {
-                            covers[last_node] = new_cover_conjs.back();
-                        }
-                        else {
-                            covers[last_node] = mk_and(new_cover_conjs);
-                        }
-                    }
-                }
-                else {
-                    covers[last_node] = c.bool_val(true);
-                }
-
-                // covers[last_node] = c.bool_val(true); //temp!
-                return false;
-            } else if (res == unknown) {
-                // the solver did not find a solution so the cover has to be reinitialized
-                covers[last_node] = c.bool_val(true);
-                return false;
-            } 
-
-            // assertion is valid
-            if (last_node == error_decl_id) {
-                covers[last_node] = c.bool_val(false);
-            }
-            return true;
-        }*/
-
+        
     public:
         lazy_horn(char const* file, int verb = 0, unsigned int timeout = 0) : filename(file), verbosity(verb), timeout(timeout), assertions(c), num_of_iters(0), last_significant_iter(0) {
             IH_MEASURE_FN;
@@ -1246,7 +1137,7 @@ namespace LazyHorn {
             return assertions_priority;
         }
 
-        ih_expr_vec get_covers() {
+        lh_expr_vec get_covers() {
             return covers;
         }
 
@@ -1365,7 +1256,6 @@ namespace LazyHorn {
 
                 // print the covers
                 if (verbosity > 1 || (verbosity == 1 && used_assertions_set.size() == assertions.size())) {
-                    // TODO: print the number of iterations if verbosity == 1 
                     std::cout << std::endl << "The cover of each relation after querying:\n";
                     for (func_decl decl : used_rel_set) {
                         std::string name = decl.name().str();
