@@ -84,7 +84,7 @@ std::string parseCmdLine(int argc, char **argv) {
 }
 
 void test_query(string fileName) {
-    IH_MEASURE_FN;
+    LH_MEASURE_FN;
     
     lazy_horn lh(fileName.c_str(), gParams.verbosity);
 
@@ -122,7 +122,7 @@ void test_query(string fileName) {
 }
 
 void z3_run(string fileName) {
-    IH_MEASURE_FN;
+    LH_MEASURE_FN;
 
     try {
         context c;
