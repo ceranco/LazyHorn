@@ -5,7 +5,7 @@
 
 /** Global variables */
 namespace LazyHorn {
-struct IhParams {
+struct LhParams {
   std::string fName;
 
   /**Interpolantion sequence to use
@@ -35,9 +35,9 @@ struct IhParams {
   unsigned context_strat;
 };
 
-std::ostream &operator<<(std::ostream &out, const IhParams &p);
+std::ostream &operator<<(std::ostream &out, const LhParams &p);
 
-extern IhParams gParams;
+extern LhParams gParams;
 
 /** Output streams */
 
