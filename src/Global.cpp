@@ -1,9 +1,9 @@
 #include "Global.h"
 
 namespace LazyHorn {
-IhParams gParams;
+LhParams gParams;
 
-std::ostream &operator<<(std::ostream &out, const IhParams &p) {
+std::ostream &operator<<(std::ostream &out, const LhParams &p) {
   out << "LAZY HORN PARAMETERS\n"
       << "\tfName = " << p.fName << "\n"
       << "\talg = " << (p.alg == 0 ? "Z3" : "LazyHorn") << "\n"
