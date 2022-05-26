@@ -149,5 +149,5 @@ public:
 // __PRETTY_FUNCTION__ can be used instead of __func__ to include class name
 // but used as is it is too verbose. Maybe need to write an extractor from full
 // name to extract only the information that we want
-#define IH_MEASURE_FN ScoppedStats __stats__(__func__)
-#define IH_MEASURE_FN_LAST ScoppedStats __stats_last__(__func__, true)
+#define LH_MEASURE_FN ScoppedStats __stats__(__func__)
+#define LH_MEASURE_FN_LAST ScoppedStats __stats_last__(__func__, true)
