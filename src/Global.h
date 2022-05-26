@@ -9,7 +9,7 @@ struct IhParams {
   std::string fName;
 
   /**Interpolantion sequence to use
-     0 Z3, 1 IH */
+     0 Z3, 1 LazyHorn */
   unsigned alg;
 
   /** verbosity level */
