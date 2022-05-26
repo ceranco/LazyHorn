@@ -21,7 +21,7 @@ option(IH_STATIC_EXE "Static executables." OFF)
 # put static libraries first
 set(CMAKE_FIND_LIBRARY_SUFFIXES ".a" ${CMAKE_FIND_LIBRARY_SUFFIXES})
 
-set (CUSTOM_BOOST_ROOT "/home/omer.r" CACHE PATH "Path to custom boost installation.")
+set (CUSTOM_BOOST_ROOT "" CACHE PATH "Path to custom boost installation.")
 if (CUSTOM_BOOST_ROOT)
   set (BOOST_ROOT ${CUSTOM_BOOST_ROOT})
   set (Boost_NO_SYSTEM_PATHS "ON")
