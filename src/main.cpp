@@ -21,14 +21,15 @@ std::string parseCmdLine(int argc, char **argv) {
     generic.add_options()("help", "produce help message")(
         "print-params", "print current parameters")(
         "alg", po::value<unsigned>(&gParams.alg)->default_value(0),
-        "Solver: 0 - Z3, 1 - IH")(
+        "Solver: 0 - Z3, 1 - LazyHorn")(
         "verbose,v", po::value<unsigned>(&gParams.verbosity)->default_value(0),
         "Verbosity level: 0 means silent")("version", "Print version string")(
-        "cover_strat",po::value<unsigned>(&gParams.cover_update_strat)->default_value(0))(
+        "cover_strat",po::value<unsigned>(&gParams.cover_update_strat)->default_value(0),
+        "0 EWTO, 1 BFS")(
         "random_seed", po::value<unsigned>(&gParams.random_seed)->default_value(0),
         "Random seed to be used by SMT solver")(
         "addition_strat",po::value<unsigned>(&gParams.clause_addition_strat)->default_value(0),
-        "0 ssp, 1 loop-free-ssp, 2 top-down-ssp")(
+        "0 SSP, 1 LFSSP, 2 TDSSP")(
         "array_theory",po::value<unsigned>(&gParams.array_theory)->default_value(0),
         "0 no, 1 yes")(
         "context_strat",po::value<unsigned>(&gParams.context_strat)->default_value(0),
@@ -62,7 +63,7 @@ std::string parseCmdLine(int argc, char **argv) {
             std::exit(1);
         }
         if (vm.count("version")) {
-            cout << "Ih (" << 0 << ")\n";
+            cout << "LazyHorn (" << 0 << ")\n";
             if (!vm.count("input-file")) std::exit(1);
         }
 
@@ -85,9 +86,9 @@ std::string parseCmdLine(int argc, char **argv) {
 void test_query(string fileName) {
     IH_MEASURE_FN;
     
-    lazy_horn ih(fileName.c_str(), gParams.verbosity);
+    lazy_horn lh(fileName.c_str(), gParams.verbosity);
 
-    check_result res = ih.query();
+    check_result res = lh.query();
     if (res == z3::sat) {
         Stats::set("Result", "SAT");
     } else if (res == z3::unsat) {
@@ -96,22 +97,22 @@ void test_query(string fileName) {
         Stats::set("Result", "UNKNOWN");
     }
 
-    Stats::uset("Iters", ih.get_num_of_iterations());
-    Stats::uset("LSIter", ih.get_last_significant_iteration());
-    Stats::uset("Asserts", ih.get_num_of_assertions());
-    Stats::uset("NeededAsserts", ih.get_num_of_needed_assertions());
+    Stats::uset("Iters", lh.get_num_of_iterations());
+    Stats::uset("LSIter", lh.get_last_significant_iteration());
+    Stats::uset("Asserts", lh.get_num_of_assertions());
+    Stats::uset("NeededAsserts", lh.get_num_of_needed_assertions());
 
     if (gParams.verbosity > 1) {
-        ih_expr_vec covers = ih.get_covers();
-        func_decl_vec node_to_decl = ih.get_node_to_decl();
+        lh_expr_vec covers = lh.get_covers();
+        func_decl_vec node_to_decl = lh.get_node_to_decl();
         std::cout << "the simplified covers:" << std::endl;
         for (int i = 0; i < covers.size(); i++) {
             func_decl decl = node_to_decl[i];
             std::string name = decl.name().str();
-            if (ih.get_root_decl_id() == i) {
+            if (lh.get_root_decl_id() == i) {
                 name = "root";
             }
-            else if (ih.get_error_decl_id() == i) {
+            else if (lh.get_error_decl_id() == i) {
                 name = "error";
             }
             std::cout << "- " << name << ":\n\t";
