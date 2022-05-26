@@ -594,7 +594,7 @@ namespace LazyHorn {
         * the function updates used_rel_set, used_assertions_set and the weights of the edges on the path to 0
         */
         void init_underapproximation() {
-            IH_MEASURE_FN;
+            LH_MEASURE_FN;
             std::vector<int> under_app = rel_graph.shortest_path(root_decl_id, error_decl_id);
 
             // initialize used_rel_set with all the nodes on the path and update the weights of the edges
@@ -611,7 +611,7 @@ namespace LazyHorn {
         * the function updates used_rel_set, used_assertions_set and the weights of the edges on the path to 0
         */
         std::vector<int> next_underapproximation() {
-            IH_MEASURE_FN;
+            LH_MEASURE_FN;
             std::vector<int> under_app;
             if (gParams.clause_addition_strat == 2) {
                 under_app = rel_graph.top_down_second_shortest_path(error_decl_id);
@@ -716,7 +716,7 @@ namespace LazyHorn {
         * the graph is traversed according to the priorities of the assertions from the last node in the added path.
         */
         void update_covers(std::vector<int>& path) {
-            IH_MEASURE_FN;
+            LH_MEASURE_FN;
             assert(path.size() > 0);
 
             compare_assertions_priority cmp(assertions_priority);
@@ -757,7 +757,7 @@ namespace LazyHorn {
         }
 
         void update_path(std::vector<int>& path, edges_queue& queue) {
-            IH_MEASURE_FN;
+            LH_MEASURE_FN;
             assert(path.size() > 0);
 
             bool change = false;
@@ -825,7 +825,7 @@ namespace LazyHorn {
         }
 
         void update_covers_bfs(std::vector<int>& path) {
-            IH_MEASURE_FN;
+            LH_MEASURE_FN;
             assert(path.size() > 0);
 
             std::queue<int> queue;
@@ -859,7 +859,7 @@ namespace LazyHorn {
         }
 
         void update_path(std::vector<int>& path, std::queue<int>& queue) {
-            IH_MEASURE_FN;
+            LH_MEASURE_FN;
             assert(path.size() > 0);
 
             bool change = false;
@@ -927,7 +927,7 @@ namespace LazyHorn {
         }
 
         bool is_valid(std::vector<int>& path, expr cover) {
-            IH_MEASURE_FN;
+            LH_MEASURE_FN;
             assert(path.size() > 0);
 
             lh_expr_vec path_assertions;
@@ -1020,7 +1020,7 @@ namespace LazyHorn {
         
     public:
         lazy_horn(char const* file, int verb = 0, unsigned int timeout = 0) : filename(file), verbosity(verb), timeout(timeout), assertions(c), num_of_iters(0), last_significant_iter(0) {
-            IH_MEASURE_FN;
+            LH_MEASURE_FN;
             fixedpoint fp(c);
             fp.set(init_params(c)); // setting the solver's parameters
             fp.from_file(file); // reading the assertions from file
@@ -1212,7 +1212,7 @@ namespace LazyHorn {
         }
 
         check_result query() {
-            IH_MEASURE_FN;
+            LH_MEASURE_FN;
             init_underapproximation(); // find the initial underapproximation
 
             int iter = 0;
