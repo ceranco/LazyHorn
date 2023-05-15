@@ -53,4 +53,9 @@ else()
   install (PROGRAMS ${Z3_EXECUTABLE} DESTINATION bin)
 endif()
 
+find_package(Mistral REQUIRED)
+if (MISTRAL_FOUND)
+  include_directories(${MISTRAL_INCLUDE_DIRS})
+endif()
+
 add_subdirectory(src)
